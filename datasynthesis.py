@@ -1,3 +1,4 @@
+#Lucy Meng's code was taken from https://github.com/Llllucy/lucy_research/blob/main/fmnist_training.py
 #irtaza's code starts from line 40 - 49 and from line 283 - 376
 import torch
 import numpy as np
