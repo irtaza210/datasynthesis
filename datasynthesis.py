@@ -350,7 +350,7 @@ def synthesize(selectedclass, k_max):
             number_of_rejections += 1
             if number_of_rejections > maximum_number_of_rejections:
                 k = max(k_min, int(np.ceil(k/2)))
-                n_rejects = 0
+                number_of_rejections = 0
         #changing k randomly selected features of the image
         image = features_randomizer(new_image, k)
     return False
