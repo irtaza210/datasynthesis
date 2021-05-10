@@ -21,6 +21,7 @@ temp_test_loader = DataLoader(fmnist_test, batch_size=temp_test_batch, shuffle=F
 train_batch_size = 30
 
 import random
+#lucy's code
 def distribution_matrix(X, num_thresholds):
     # given p is an integer of power 2, and num_thresholds = p-1,
     # find p-1 thresholds value for each feature so that the probability that a feature of an image falls between two consecutive thresholds values is 1/p
@@ -35,7 +36,7 @@ def distribution_matrix(X, num_thresholds):
                     threshold_value[threshold_idx][color][i][j] = np.quantile(dist, (threshold_idx + 1) / (
                             num_thresholds + 1))
     return threshold_value
-
+#irtaza's code
 def generateKey(n):
     key = np.zeros(28*28*n)
     for i in range(28*28*n):
@@ -45,7 +46,7 @@ def generateKey(n):
         else:
             key[i] = 1
     return key.reshape((1, -1))
-
+#lucy's code
 def generateHmatrix(length):
     # recursively construct the hadamard matrix of size 2 to the power length
     H = np.ones(shape=(np.power(2, length), np.power(2, length)))
@@ -58,14 +59,14 @@ def generateHmatrix(length):
                 H[i2 + i1][i3 + i1] = -H[i2][i3]
         i1 += i1
     return H[:, 1:]
-
+#lucy's code
 def mapping(row):
     # convert a bits string into an array
     out = []
     for num in row:
         out.append(num)
     return out
-
+#lucy's code
 def generateMappingorder(X, length):
     # for every pixel in the image, randomly assign an order from 0 to 2 to the power length-1,
     # which represents which row of hadamard matrix a feature would be mapped into given which two thresholds values it lies between
@@ -78,7 +79,7 @@ def generateMappingorder(X, length):
                 np.random.shuffle(mapping_order)
                 mapping[k][i][j] = mapping_order
     return mapping
-
+#lucy's code
 def whitening(X):
     # decorrelate the features in the image
     images = X
@@ -91,7 +92,7 @@ def whitening(X):
     images = images.reshape(X.shape[0], X.shape[1], X.shape[2], X.shape[3])
     return images, U, mean
 
-
+#lucy's code
 def encoding(X, distribution, Z, length, H, mapping_order, num_inputs):
     # for each feature of every image, determine which two thresholds values it lies between,
     # map it to the corresponding row in the hadamard matrix,
@@ -117,7 +118,7 @@ def encoding(X, distribution, Z, length, H, mapping_order, num_inputs):
         del image
     print(input_dataset)
     return input_dataset
-
+#lucy's code
 def xor(s1, s2):
     ans = []
     for i in range(len(s1)):
@@ -126,7 +127,7 @@ def xor(s1, s2):
         else:
             ans.append(-1)
     return ans
-
+#lucy's code
 def quantized_matrix(X, num_thresholds, distribution):
     quantized_value = np.ndarray(shape=(num_thresholds + 1, X.shape[1], X.shape[2], X.shape[3]))
     for c in range(X.shape[1]):
@@ -144,7 +145,7 @@ def quantized_matrix(X, num_thresholds, distribution):
                         quantized_value[quantized_idx][c][i][j] = np.random.uniform(
                             distribution[quantized_idx - 1][c][i][j], distribution[quantized_idx][c][i][j])
     return quantized_value
-
+#lucy's code
 def quantization(X, distribution, quant):
     input_dataset = torch.empty(size=(X.shape[0], X.shape[1], X.shape[2], X.shape[3]))
     for k in range(X.shape[0]):
@@ -163,6 +164,7 @@ def quantization(X, distribution, quant):
         del image
     return input_dataset
 
+#lucy's code
 H = []
 length = 3
 p_value = np.power(2, length - 1)
@@ -171,6 +173,7 @@ for i in range(length):
 temp_iterator = iter(temp_train_loader)
 X, y = next(temp_iterator)
 
+#lucy's code
 X, U, mean = whitening(X)
 X = torch.from_numpy(X).float()
 dist = distribution_matrix(X, p_value - 1)
@@ -179,13 +182,16 @@ quant = quantized_matrix(X, p_value-1,dist)
 print('quant done')
 X = quantization(X,dist,quant)
 mapping_order = generateMappingorder(X, length)
+#irtaza's code
 Z = generateKey(3)
 num_inputs = (np.power(2, length - 1)-1) * X.shape[1] * X.shape[2] * X.shape[3]
 X = encoding(X, dist, Z, length, H, mapping_order, num_inputs)
 
+#lucy's code
 encoded_dataset_train = data_utils.TensorDataset(X, y)
-encoded_train_loader = data_utils.DataLoader(encoded_dataset_train, batch_size=train_batch_size, shuffle=True)
 
+encoded_train_loader = data_utils.DataLoader(encoded_dataset_train, batch_size=train_batch_size, shuffle=True)
+#lucy's code
 temp_iterator = iter(temp_test_loader)
 X, y = next(temp_iterator)
 images = X
@@ -198,9 +204,11 @@ X = torch.from_numpy(X).float()
 X = quantization(X,dist,quant)
 X = encoding(X, dist, Z, length, H, mapping_order, num_inputs)
 
+#lucy's code
 encoded_dataset_test = data_utils.TensorDataset(X, y)
 encoded_test_loader = data_utils.DataLoader(encoded_dataset_test, batch_size=len(fmnist_test), shuffle=False)
 
+#lucy's code
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -234,6 +242,7 @@ encoded_model = Net().to(device)
 
 messages = []
 
+#lucy's code
 def epoch(loader, model, opt=None):
     """Standard training/evaluation epoch over the dataset"""
     total_loss, total_err = 0., 0.
@@ -251,6 +260,7 @@ def epoch(loader, model, opt=None):
         total_loss += loss.item() * X.shape[0]
     return total_err / len(loader.dataset), total_loss / len(loader.dataset)
 
+#lucy's code
 opt = optim.SGD(encoded_model.parameters(), lr=0.001)
 for t in range(200):
     if t == 40:
@@ -268,7 +278,8 @@ for t in range(200):
     train_err, train_loss = epoch(encoded_train_loader, encoded_model, opt)
     test_err, test_loss = epoch(encoded_test_loader, encoded_model)
     msg = str(t) + ':' + str(1-test_err)
-
+    
+#irtaza's code
 import random
 def random_encrypted_image():
     #this generates a random tensor of values between 0 and 1 and has same dimensions as an unencrypted MNIST image
@@ -288,6 +299,7 @@ def random_encrypted_image():
     #a new encrypted image is returned along with the key and mapped hadamard matrix which we will be using for key extraction
     return np.array(random_tensor), Z, mappingofmatrix
 
+#irtaza's code
 def features_randomizer(x, k):
     #k number of indexes generated at random
     indexes = np.random.randint(0, x.shape[0], size=k)
@@ -302,6 +314,7 @@ def features_randomizer(x, k):
     #we returned the changed image
     return x
 
+#irtaza's code
 def synthesize(selectedclass, k_max):
     image, key, mappingofmatrix = random_encrypted_image()
     initial_y_c = 0 #called y*c in shokri's paper
@@ -341,6 +354,7 @@ def synthesize(selectedclass, k_max):
         image = features_randomizer(new_image, k)
     return False
 
+#irtaza's code
 def keyextraction(selectedclass, k):
     image,key,mappingofmatrix = synthesize(selectedclass,k)
     mappingofmatrix = np.array(mappingofmatrix)
