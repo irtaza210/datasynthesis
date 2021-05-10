@@ -317,7 +317,7 @@ def features_randomizer(x, k):
 
 #irtaza's code
 def synthesize(selectedclass, k_max):
-    image, key, mappingofmatrix = random_encrypted_image()
+    image, key, mappingofmatrix = random_encrypted_image() #initializing a random record
     initial_y_c = 0 #called y*c in shokri's paper
     number_of_rejections = 0 #called j in shokri's paper
     maximum_number_of_rejections = 5 #called rejmax in shokri's paper
